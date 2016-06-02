@@ -17,7 +17,7 @@ Build-Depends: debhelper (>= 8), cdbs (>= 0.4.97), autotools-dev,
  libpoppler-glib-dev (>= 0.3.1),
  libasound2-dev (>= 1.0.0) [linux-any],
  libdbus-glib-1-dev (>= 0.70),
- liblcms2-dev | liblcms-dev, libgegl-dev, libbabl-dev,
+ liblcms2-dev | liblcms-dev, libgegl-dev (>=0.3), libbabl-dev,
  xsltproc, gtk-doc-tools
 #Build-Conflicts: libgimp2.0
 X-Python-Version: >=2.6

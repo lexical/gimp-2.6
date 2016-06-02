@@ -1,0 +1,104 @@
+From dbf844c012894166e312470f0d98560d5e426613 Mon Sep 17 00:00:00 2001
+From: Alexia Death <alexiadeath@gmail.com>
+Date: Sun, 20 Dec 2009 16:36:40 +0000
+Subject: app: Disable history buffer via use of gimprc option
+
+Adds non-UI option to disable the use of often buggy history buffer.
+This option defaults to false, since a lot of device/X/GDK combos are broken
+and the resulting stroke often actually looks better without history events.
+Put (use-event-history yes) in gimprc if you want more events and possibly bugs.
+---
+Index: gimp-2.6.11/app/config/gimpdisplayconfig.c
+===================================================================
+--- gimp-2.6.11.orig/app/config/gimpdisplayconfig.c	2010-07-02 18:51:55.000000000 -0400
++++ gimp-2.6.11/app/config/gimpdisplayconfig.c	2012-01-19 09:05:10.971496157 -0500
+@@ -41,6 +41,7 @@
+ #define DEFAULT_ACTIVATE_ON_FOCUS    TRUE
+ #define DEFAULT_MONITOR_RESOLUTION   96.0
+ #define DEFAULT_MARCHING_ANTS_SPEED  200
++#define DEFAULT_USE_EVENT_HISTORY    FALSE
+ 
+ enum
+ {
+@@ -70,7 +71,8 @@
+   PROP_ACTIVATE_ON_FOCUS,
+   PROP_SPACE_BAR_ACTION,
+   PROP_XOR_COLOR,
+-  PROP_ZOOM_QUALITY
++  PROP_ZOOM_QUALITY,
++  PROP_USE_EVENT_HISTORY
+ };
+ 
+ 
+@@ -239,6 +241,12 @@
+                                  GIMP_TYPE_ZOOM_QUALITY,
+                                  GIMP_ZOOM_QUALITY_HIGH,
+                                  GIMP_PARAM_STATIC_STRINGS);
++
++  GIMP_CONFIG_INSTALL_PROP_BOOLEAN (object_class, PROP_USE_EVENT_HISTORY,
++                                    "use-event-history",
++                                    DEFAULT_USE_EVENT_HISTORY_BLURB,
++                                    DEFAULT_USE_EVENT_HISTORY,
++                                    GIMP_PARAM_STATIC_STRINGS);
+ }
+ 
+ static void
+@@ -372,6 +380,10 @@
+       display_config->zoom_quality = g_value_get_enum (value);
+       break;
+ 
++    case PROP_USE_EVENT_HISTORY:
++      display_config->use_event_history = g_value_get_boolean (value);
++      break;
++
+     default:
+       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+       break;
+@@ -467,6 +479,10 @@
+       g_value_set_enum (value, display_config->zoom_quality);
+       break;
+ 
++    case PROP_USE_EVENT_HISTORY:
++      g_value_set_boolean (value, display_config->use_event_history);
++      break;
++
+     default:
+       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+       break;
+Index: gimp-2.6.11/app/config/gimpdisplayconfig.h
+===================================================================
+--- gimp-2.6.11.orig/app/config/gimpdisplayconfig.h	2010-07-02 18:51:55.000000000 -0400
++++ gimp-2.6.11/app/config/gimpdisplayconfig.h	2012-01-19 09:05:10.971496157 -0500
+@@ -70,6 +70,7 @@
+   GimpSpaceBarAction  space_bar_action;
+   GimpRGB             xor_color;
+   GimpZoomQuality     zoom_quality;
++  gboolean            use_event_history;
+ };
+ 
+ struct _GimpDisplayConfigClass
+Index: gimp-2.6.11/app/config/gimprc-blurbs.h
+===================================================================
+--- gimp-2.6.11.orig/app/config/gimprc-blurbs.h	2010-07-02 18:51:55.000000000 -0400
++++ gimp-2.6.11/app/config/gimprc-blurbs.h	2012-01-19 09:05:10.975496157 -0500
+@@ -450,5 +450,8 @@
+ #define ZOOM_QUALITY_BLURB \
+ "There's a tradeoff between speed and quality of the zoomed-out display."
+ 
++#define DEFAULT_USE_EVENT_HISTORY_BLURB \
++"Bugs in event history buffer are frequent so in case of curor " \
++"offset problems turning it off helps."
+ 
+ #endif  /* __GIMP_RC_BLURBS_H__ */
+Index: gimp-2.6.11/app/display/gimpdisplayshell-callbacks.c
+===================================================================
+--- gimp-2.6.11.orig/app/display/gimpdisplayshell-callbacks.c	2010-07-02 18:51:55.000000000 -0400
++++ gimp-2.6.11/app/display/gimpdisplayshell-callbacks.c	2012-01-19 09:05:10.979496157 -0500
+@@ -1231,6 +1231,7 @@
+                  */
+                 if ((gimp_tool_control_get_motion_mode (active_tool->control) ==
+                      GIMP_MOTION_MODE_EXACT) &&
++                    shell->display->config->use_event_history &&
+                     gdk_device_get_history (mevent->device, mevent->window,
+                                             shell->last_read_motion_time + 1,
+                                             mevent->time - 1,

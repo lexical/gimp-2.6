@@ -1,0 +1,12 @@
+01_debian-gimprc.patch
+02_help-message.patch
+03_gimp.desktop.in.in.patch
+fix_ftbfs4hurd.patch
+ghost-cursor.patch
+embed-page-setup-dialog.patch
+CVE-2012-3236.patch
+CVE-2012-3403.patch
+CVE-2012-3481.patch
+CVE-2012-5576.patch
+CVE-2013-1913.patch
+CVE-2013-1978.patch

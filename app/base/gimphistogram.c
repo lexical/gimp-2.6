@@ -45,7 +45,7 @@ struct _GimpHistogram
   gint           ref_count;
   gint           n_channels;
 #ifdef ENABLE_MP
-  GStaticMutex   mutex;
+  GMutex         mutex;
   gchar          slots[NUM_SLOTS];
 #endif
   gdouble       *values[NUM_SLOTS];
@@ -71,9 +71,11 @@ gimp_histogram_new (void)
 
   histogram->ref_count = 1;
 
+/*
 #ifdef ENABLE_MP
   g_static_mutex_init (&histogram->mutex);
 #endif
+*/
 
   return histogram;
 }
@@ -121,7 +123,7 @@ gimp_histogram_duplicate (GimpHistogram *histogram)
   dup = gimp_histogram_new ();
 
 #ifdef ENABLE_MP
-  g_static_mutex_lock (&histogram->mutex);
+  g_mutex_lock (&histogram->mutex);
 #endif
 
   dup->n_channels = histogram->n_channels;
@@ -129,7 +131,7 @@ gimp_histogram_duplicate (GimpHistogram *histogram)
                               sizeof (gdouble) * dup->n_channels * 256);
 
 #ifdef ENABLE_MP
-  g_static_mutex_unlock (&histogram->mutex);
+  g_mutex_unlock (&histogram->mutex);
 #endif
 
   return dup;
@@ -586,7 +588,7 @@ gimp_histogram_calculate_sub_region (GimpHistogram *histogram,
   gint slot = 0;
 
   /* find an unused temporary slot to put our results in and lock it */
-  g_static_mutex_lock (&histogram->mutex);
+  g_mutex_lock (&histogram->mutex);
 
   while (histogram->slots[slot])
     slot++;
@@ -594,7 +596,7 @@ gimp_histogram_calculate_sub_region (GimpHistogram *histogram,
   values = histogram->values[slot];
   histogram->slots[slot] = 1;
 
-  g_static_mutex_unlock (&histogram->mutex);
+  g_mutex_unlock (&histogram->mutex);
 
   if (! values)
     {
@@ -831,10 +833,10 @@ gimp_histogram_calculate_sub_region (GimpHistogram *histogram,
 
 #ifdef ENABLE_MP
   /* unlock this slot */
-  g_static_mutex_lock (&histogram->mutex);
+  g_mutex_lock (&histogram->mutex);
 
   histogram->slots[slot] = 0;
 
-  g_static_mutex_unlock (&histogram->mutex);
+  g_mutex_unlock (&histogram->mutex);
 #endif
 }

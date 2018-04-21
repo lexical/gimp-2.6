@@ -185,7 +185,7 @@ gimp_gegl_tool_map (GimpImageMapTool *image_map_tool)
   if (! tool->config)
     return;
 
-  pspecs = gegl_list_properties (tool->operation, &n_pspecs);
+  pspecs = gegl_operation_list_properties (tool->operation, &n_pspecs);
 
   for (i = 0; i < n_pspecs; i++)
     {
@@ -349,7 +349,7 @@ gimp_gegl_tool_dialog (GimpImageMapTool *image_map_tool)
     {
       GeglOperationClass *opclass = GEGL_OPERATION_CLASS (iter->data);
 
-      if (strstr (opclass->categories, "color")   ||
+      /*if (strstr (opclass->categories, "color")   ||
           strstr (opclass->categories, "enhance") ||
           strstr (opclass->categories, "misc")    ||
           strstr (opclass->categories, "blur")    ||
@@ -380,7 +380,7 @@ gimp_gegl_tool_dialog (GimpImageMapTool *image_map_tool)
 					     COLUMN_LABEL,    label,
 					     COLUMN_STOCK_ID, stock_id,
                                              -1);
-        }
+        } */
     }
 
   g_list_free (opclasses);
@@ -476,7 +476,7 @@ gimp_param_spec_duplicate (GParamSpec *pspec)
                                      spec->default_value,
                                      pspec->flags);
 
-          if (GEGL_IS_PARAM_SPEC_MULTILINE (pspec))
+          if (gegl_param_spec_get_property_key(pspec, "multiline"))
             {
               g_param_spec_set_qdata (new, multiline_quark,
                                       GINT_TO_POINTER (TRUE));
@@ -691,7 +691,7 @@ gimp_gegl_tool_config_class_init (GObjectClass *klass,
   klass->set_property = gimp_gegl_tool_config_set_property;
   klass->get_property = gimp_gegl_tool_config_get_property;
 
-  pspecs = gegl_list_properties (operation, &n_pspecs);
+  pspecs = gegl_operation_list_properties (operation, &n_pspecs);
 
   for (i = 0; i < n_pspecs; i++)
     {

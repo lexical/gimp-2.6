@@ -97,7 +97,7 @@ gimp_operation_tile_sink_class_init (GimpOperationTileSinkClass *klass)
   gegl_operation_class_set_keys (operation_class,
                                  "name", "gimp-tilemanager-sink",
                                  "categories", "output",
-                                 "description", "GIMP TileManager sink");
+                                 "description", "GIMP TileManager sink", NULL);
 
   sink_class->process          = gimp_operation_tile_sink_process;
   sink_class->needs_full       = FALSE;
@@ -221,8 +221,7 @@ gimp_operation_tile_sink_process (GeglOperation       *operation,
     {
       GeglRectangle rect = { destPR.x, destPR.y, destPR.w, destPR.h };
 
-      gegl_buffer_get (input,
-                       1.0, &rect, format, destPR.data, destPR.rowstride);
+      gegl_buffer_get (input, &rect, 1.0, format, destPR.data, destPR.rowstride, GEGL_ABYSS_NONE);
     }
 
   g_signal_emit (operation, tile_sink_signals[DATA_WRITTEN], 0, result);

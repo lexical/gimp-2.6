@@ -79,8 +79,8 @@ gimp_operation_tile_source_class_init (GimpOperationTileSourceClass *klass)
   object_class->get_property          = gimp_operation_tile_source_get_property;
 
   operation_class->name               = "gimp-tilemanager-source";
-  operation_class->categories         = "input";
-  operation_class->description        = "GIMP TileManager source";
+  //operation_class->categories         = "input";
+  //operation_class->description        = "GIMP TileManager source";
   operation_class->prepare            = gimp_operation_tile_source_prepare;
   operation_class->get_bounding_box   = gimp_operation_tile_source_get_bounding_box;
   operation_class->get_cached_region  = NULL; /* the default source is
@@ -240,7 +240,7 @@ gimp_operation_tile_source_process (GeglOperation       *operation,
     {
       GeglRectangle rect = { srcPR.x, srcPR.y, srcPR.w, srcPR.h };
 
-      gegl_buffer_set (output, &rect, format, srcPR.data, srcPR.rowstride);
+      gegl_buffer_set (output, &rect, 1, format, srcPR.data, srcPR.rowstride);
     }
 
   return TRUE;
